@@ -1,9 +1,9 @@
 # Contribution [1]: [concat(a[n-1:n], a[n-2:n-1], ...., a[0:1]) to reverse #1409 — Enzyme-JAX]
 
-**Contribution Number:** [1]  
-**Student:** [Amirjon Ulmasov]  
-**Issue:** [[GitHub issue link](https://github.com/EnzymeAD/Enzyme-JAX/issues/1409)]  
-**Status:** [Phase I] [Complete]
+**Contribution Number:** 1
+**Student:** Amirjon Ulmasov  
+**Issue:** [GitHub issue link](https://github.com/EnzymeAD/Enzyme-JAX/issues/1409)]  
+**Status:** Phase I Complete
 
 ---
 
