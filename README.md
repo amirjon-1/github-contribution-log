@@ -1,15 +1,32 @@
-# Contribution [#]: [Issue Title]
+# Contribution [1]: [concat(a[n-1:n], a[n-2:n-1], ...., a[0:1]) to reverse #1409 — Enzyme-JAX]
 
-**Contribution Number:** [1 / 2 / 3]  
-**Student:** [Your Name]  
-**Issue:** [GitHub issue link]  
-**Status:** [Phase I / Phase II / Phase III / Phase IV] [In Progress / Complete]
+**Contribution Number:** [1]  
+**Student:** [Amirjon Ulmasov]  
+**Issue:** [[GitHub issue link](https://github.com/EnzymeAD/Enzyme-JAX/issues/1409)]  
+**Status:** [Phase I] [Complete]
 
 ---
 
 ## Why I Chose This Issue
 
-[1-2 paragraphs explaining why this issue interests you, how it matches your skills/learning goals, what you hope to learn]
+I chose this issue because it connects directly to work I'm already 
+doing. Through my undergraduate research with Professor Kelly Shaw at 
+Williams College, I spend a lot of time optimizing CUDA kernels and 
+profiling GPU performance. That work taught me to look for places where 
+compute is being wasted and find ways to do less work for the same result.
+
+This issue is that same idea applied at the compiler level. Right now, 
+when code produces a tensor in reverse order, the compiler emits a bunch 
+of individual slice and concat operations instead of just using a single 
+reverse op. The fix is to teach the compiler to recognize that pattern 
+and replace it with the simpler version. Fewer ops means less memory 
+movement and faster execution on GPUs and other accelerators.
+
+I picked Enzyme-JAX specifically because it's an active research project, 
+the maintainers respond quickly, and it uses MLIR which is the same 
+compiler infrastructure I see in GPU toolchains. This felt like a natural 
+next step from my research and a good way to get real experience with 
+compiler optimization in an ML context.
 
 ---
 
