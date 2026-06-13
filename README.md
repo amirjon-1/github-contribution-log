@@ -2,8 +2,8 @@
 
 **Contribution Number:** 1
 **Student:** Amirjon Ulmasov  
-**Issue:** [GitHub issue link](https://github.com/EnzymeAD/Enzyme-JAX/issues/1409)]  
-**Status:** Phase I Complete
+**Issue:** [GitHub issue link](https://github.com/EnzymeAD/Enzyme-JAX/issues/1409)  
+**Status:** Phase 2 Complete
 
 ---
 
@@ -34,19 +34,24 @@ compiler optimization in an ML context.
 
 ### Problem Description
 
-[In your own words, what's broken or missing?]
+When JAX reverses a tensor (like a[::-1]), the compiler outputs a bunch of 
+individual slice operations followed by a concat instead of just using the 
+built-in reverse op that already exists in StableHLO.
 
 ### Expected Behavior
 
-[What should happen?]
+The compiler should output a single stablehlo.reverse op. That's it.
 
 ### Current Behavior
 
-[What actually happens?]
+Instead of one reverse op, you get N slice ops (one per row) plus a 
+concatenate. For a 5-element tensor you get 5 slices + 1 concat = 6 ops 
+where 1 would do.
 
 ### Affected Components
 
-[Which parts of the codebase are involved?]
+The canonicalization pass in Enzyme-JAX — the part of the compiler that 
+looks for redundant patterns and simplifies them. Likely in src/enzyme_ad/jax/.
 
 ---
 
@@ -54,19 +59,31 @@ compiler optimization in an ML context.
 
 ### Environment Setup
 
-[Notes on setting up your local development environment - challenges you faced, how you solved them]
+Enzyme-JAX uses Bazel as its build system and requires bazel-6.5, clang++, 
+python, python-virtualenv, and python3-dev. Rather than doing a full source 
+build (which compiles LLVM/MLIR from scratch and takes hours), I used pip 
+install enzyme-ad to get a working environment quickly, then cloned the fork 
+to browse and modify the source. The relevant optimization pass is in 
+src/enzyme_ad/jax/Passes/EnzymeHLOOpt.cpp.
 
 ### Steps to Reproduce
 
-1. [Step 1]
-2. [Step 2]
-3. [Observed result]
+1. Clone fork and checkout fix-issue-1409
+2. Build Enzyme-JAX following [build method from CI/README]
+3. Create test file with the slice/concat MLIR pattern from the issue
+4. Run through the compiler pipeline
+5. Expected: stablehlo.reverse op emitted
+6. Actual: individual slice + concatenate ops remain
 
 ### Reproduction Evidence
 
-- **Commit showing reproduction:** [Link to commit in your fork]
+- **Commit showing reproduction:** [Link to commit in your fork](https://github.com/amirjon-1/Enzyme-JAX/tree/fix-issue-1409)
 - **Screenshots/logs:** [If applicable]
-- **My findings:** [What you discovered during reproduction]
+- **My findings:** The pattern-matching logic for HLO optimizations lives in 
+src/enzyme_ad/jax/Passes/EnzymeHLOOpt.cpp. This is where existing 
+canonicalization rules are written — for example, folding redundant ops into 
+simpler equivalents. There is currently no rule that matches the slice+concat 
+reverse pattern, which confirms the issue. This is where the fix will go.
 
 ---
 
@@ -74,30 +91,41 @@ compiler optimization in an ML context.
 
 ### Analysis
 
-[Your analysis of the root cause - what's causing the issue?]
+There's no pattern-matching rule that recognizes the slice+concat sequence 
+as a reverse. The compiler just emits whatever JAX lowers to without checking 
+if there's a simpler equivalent.
 
 ### Proposed Solution
 
-[High-level description of your fix approach]
+Add a canonicalization rule that detects when slices cover a full axis in 
+reverse order and are concatenated back together, then replaces the whole 
+thing with a single stablehlo.reverse.
 
 ### Implementation Plan
 
 Using UMPIRE framework (adapted):
 
-**Understand:** [Restate the problem]
+**Understand:** The compiler emits N stablehlo.slice + stablehlo.concatenate ops when 
+the operands form a complete reverse along one axis. A single stablehlo.reverse 
+is equivalent and cheaper.
 
-**Match:** [What similar patterns/solutions exist in the codebase?]
+**Match:** Look for existing canonicalization patterns in the codebase — likely in
+src/enzyme_ad/jax/ or similar — where patterns of ops get folded into simpler ops.
 
 **Plan:** [Step-by-step implementation plan]
-1. [Modify file X to do Y]
-2. [Add function Z]
-3. [Update tests]
+1. Add a canonicalization pattern (C++ rewrite rule) that detects the slice/concat 
+   signature: consecutive unit-stride slices covering the full axis in reverse order, 
+   all concatenated along that axis
+2. Replace the matched pattern with stablehlo.reverse on the appropriate dimension
+3. Add a lit test (.mlir file) that verifies the transformation fires correctly
 
-**Implement:** [Link to your branch/commits as you work]
+**Implement:** [Link to your branch/commits as you work](https://github.com/amirjon-1/Enzyme-JAX/tree/fix-issue-1409)
 
-**Review:** [Self-review checklist - does it follow the project's contribution guidelines?]
+**Review:** Check CONTRIBUTING.md for commit message format and test conventions.
 
-**Evaluate:** [How will you verify it works?]
+**Evaluate:** The lit test should show CHECK lines confirming stablehlo.reverse appears 
+and the slice/concat sequence does not.
+
 
 ---
 
