@@ -3,7 +3,7 @@
 **Contribution Number:** 1
 **Student:** Amirjon Ulmasov  
 **Issue:** [GitHub issue link](https://github.com/EnzymeAD/Enzyme-JAX/issues/1409)  
-**Status:** Phase 2 Complete
+**Status:** Phase 3 Complete
 
 ---
 
@@ -133,9 +133,9 @@ and the slice/concat sequence does not.
 
 ### Unit Tests
 
-- [ ] Test case 1: [Description]
-- [ ] Test case 2: [Description]
-- [ ] Test case 3: [Description]
+- [x] Test case 1: 3D tensor reverse along dim 0 (5×3×10, matches exact pattern from issue)
+- [x] Test case 2: 1D tensor simple reverse
+- [x] Test case 3: Negative case — forward-ordered slices do NOT fold (no false positives)
 
 ### Integration Tests
 
@@ -144,15 +144,25 @@ and the slice/concat sequence does not.
 
 ### Manual Testing
 
-[What you tested manually and results]
+Ran bazel run //:enzymexlamlir-opt -- --enzyme-hlo-opt /tmp/test_reverse.mlir after 
+implementing the fix. Output confirmed: 5 slice ops + 1 concatenate collapsed into 
+a single stablehlo.reverse op along dim 0.
 
 ---
 
 ## Implementation Notes
 
-### Week [X] Progress
+### Week [1] Progress
 
-[What you built this week, challenges faced, decisions made]
+Implemented the ConcatSlicesToReverse canonicalization pattern in 
+src/enzyme_ad/jax/Passes/EnzymeHLOOpt.cpp. The pattern anchors on 
+stablehlo::ConcatenateOp and fires when all operands are unit-stride 
+SliceOps from the same source tensor, covering the full extent of the 
+concat dimension in reverse order, with all other dimensions fully 
+covered. On match, emits a single stablehlo::ReverseOp. Registered the 
+pattern alongside ConcatFuse and ConcatToBroadcast in the patterns.add 
+block. Also wrote a lit test with 3 cases (positive 3D, positive 1D, 
+negative wrong-order). All three pass.
 
 ### Week [Y] Progress
 
@@ -160,9 +170,12 @@ and the slice/concat sequence does not.
 
 ### Code Changes
 
-- **Files modified:** [List]
-- **Key commits:** [Links to important commits]
-- **Approach decisions:** [Why you chose certain approaches]
+- **Files modified:** src/enzyme_ad/jax/Passes/EnzymeHLOOpt.cpp, 
+  test/lit_tests/concat_slices_to_reverse.mlir
+- **Key commits:** https://github.com/amirjon-1/Enzyme-JAX/tree/fix-issue-1409
+- **Approach decisions:** Anchored the pattern on ConcatenateOp rather than 
+  SliceOp since that's the output op and matches how similar patterns like 
+  ConcatFuse are structured in the codebase.
 
 ---
 
