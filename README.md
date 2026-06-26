@@ -3,7 +3,7 @@
 **Contribution Number:** 1
 **Student:** Amirjon Ulmasov  
 **Issue:** [GitHub issue link](https://github.com/EnzymeAD/Enzyme-JAX/issues/1409)  
-**Status:** Phase 3 Complete
+**Status:** Phase 4 Complete
 
 ---
 
@@ -181,36 +181,39 @@ negative wrong-order). All three pass.
 
 ## Pull Request
 
-**PR Link:** [GitHub PR URL when submitted]
+**PR Link:** [https://github.com/EnzymeAD/Enzyme-JAX/pull/2589](https://github.com/EnzymeAD/Enzyme-JAX/pull/2589)
 
-**PR Description:** [Draft or final PR description - much of the content above can be adapted]
+**PR Description:** Added ConcatSlicesToReverse canonicalization pattern that 
+detects N unit-stride slices of the same tensor concatenated in reverse order 
+and replaces the sequence with a single stablehlo.reverse op. Includes 3 lit 
+tests. Fixes #1409.
 
 **Maintainer Feedback:**
 - [Date]: [Summary of feedback received]
 - [Date]: [How you addressed it]
 
-**Status:** [Awaiting review / Iterating / Approved / Merged]
+**Status:** Awaiting review
 
 ---
 
 ## Learnings & Reflections
 
 ### Technical Skills Gained
-
-[What you learned technically]
+First time writing a C++ MLIR canonicalization pattern. Learned how 
+pattern-matching works in the MLIR rewrite framework, how to inspect op 
+attributes like slice indices, and how to use replaceOpWithNewOp to emit 
+a simpler op. Also got hands-on experience with Bazel builds and lit tests.
 
 ### Challenges Overcome
-
-[What was hard and how you solved it]
+Merge conflict during rebase — someone had added new patterns to the same 
+block in EnzymeHLOOpt.cpp. Resolved by keeping both sets of patterns and 
+inserting ConcatSlicesToReverse in the right place.
 
 ### What I'd Do Differently Next Time
-
-[Reflection on your process]
+Rebase on upstream main before starting to avoid merge conflicts at PR time.
 
 ---
 
 ## Resources Used
 
-- [Link to helpful documentation]
-- [Tutorial or Stack Overflow post that helped]
-- [GitHub issues or discussions that helped]
+- [Issue](https://github.com/EnzymeAD/Enzyme-JAX/issues/1409)
