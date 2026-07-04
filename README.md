@@ -220,7 +220,7 @@ Rebase on upstream main before starting to avoid merge conflicts at PR time.
 
 
 
-# Contribution [2]: [Issue Title]
+# Contribution [2]: slice(gather(x, ind)) -> gather(x, slice(ind)) #1924
 
 **Contribution Number:** 2 
 **Student:** Amirjon Ulmasov 
