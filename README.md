@@ -224,14 +224,24 @@ Rebase on upstream main before starting to avoid merge conflicts at PR time.
 
 **Contribution Number:** 2 
 **Student:** Amirjon Ulmasov 
-**Issue:** [GitHub issue link]  
+**Issue:** [GitHub issue link](https://github.com/EnzymeAD/Enzyme-JAX/issues/1924) 
 **Status:** Phase 1 Completed
 
 ---
 
 ## Why I Chose This Issue
 
-[1-2 paragraphs explaining why this issue interests you, how it matches your skills/learning goals, what you hope to learn]
+After completing my first contribution to Enzyme-JAX (#1409), I wanted to 
+stay in the same codebase and keep building on what I learned. This issue 
+is the same class of problem — a compiler pattern that emits more ops than 
+necessary. Instead of slicing the result of a gather, you can slice the 
+indices first and gather fewer elements, which is cheaper.
+
+I'm now familiar with EnzymeHLOOpt.cpp, the canonicalization pattern 
+structure, the lit test format, and the Bazel build system, so I can 
+move faster on this second contribution. The issue was filed by the same 
+maintainer (avik-pal) who opened #1409, which means it's the same style 
+of well-scoped, clearly described optimization request.
 
 ---
 
