@@ -225,7 +225,7 @@ Rebase on upstream main before starting to avoid merge conflicts at PR time.
 **Contribution Number:** 2 
 **Student:** Amirjon Ulmasov 
 **Issue:** [GitHub issue link](https://github.com/EnzymeAD/Enzyme-JAX/issues/1924) 
-**Status:** Phase 1 Completed
+**Status:** Phase 2 Completed
 
 ---
 
@@ -248,20 +248,24 @@ of well-scoped, clearly described optimization request.
 ## Understanding the Issue
 
 ### Problem Description
-
-[In your own words, what's broken or missing?]
+The compiler emits a gather over the full index tensor followed by a slice 
+of the result, when it could instead slice the indices first and gather 
+fewer elements — avoiding unnecessary computation.
 
 ### Expected Behavior
 
-[What should happen?]
+slice(gather(x, ind)) should fold into gather(x, slice(ind)), processing 
+only the elements actually needed.
 
 ### Current Behavior
 
-[What actually happens?]
+The optimizer emits the full gather first, then slices the result. For 
+large index tensors this wastes memory and compute.
 
 ### Affected Components
 
-[Which parts of the codebase are involved?]
+src/enzyme_ad/jax/Passes/EnzymeHLOOpt.cpp — same canonicalization pass 
+as contribution 1.
 
 ---
 
@@ -269,19 +273,23 @@ of well-scoped, clearly described optimization request.
 
 ### Environment Setup
 
-[Notes on setting up your local development environment - challenges you faced, how you solved them]
+Same environment as contribution 1 — Bazel build already working on macOS. 
+No additional setup needed.
 
 ### Steps to Reproduce
 
-1. [Step 1]
-2. [Step 2]
-3. [Observed result]
+1. Checkout fix-issue-1924 branch
+2. Create test .mlir file with slice(gather) pattern from the issue
+3. Run: bazel run //:enzymexlamlir-opt -- --enzyme-hlo-opt /tmp/test_gather.mlir
+4. Expected: gather on sliced indices
+5. Actual: full gather followed by slice
 
 ### Reproduction Evidence
 
-- **Commit showing reproduction:** [Link to commit in your fork]
-- **Screenshots/logs:** [If applicable]
-- **My findings:** [What you discovered during reproduction]
+- **Commit showing reproduction:** https://github.com/amirjon-1/Enzyme-JAX/tree/fix-issue-1924
+- **My findings:**  No pattern in EnzymeHLOOpt.cpp currently matches 
+  slice(gather) — confirmed by running the optimizer and observing 
+  the pattern is not folded.
 
 ---
 
@@ -289,30 +297,38 @@ of well-scoped, clearly described optimization request.
 
 ### Analysis
 
-[Your analysis of the root cause - what's causing the issue?]
+No canonicalization rule exists that recognizes a slice of a gather result 
+as equivalent to a gather on sliced indices. The maintainer also noted the 
+gather must have only one user before applying the transformation.
 
 ### Proposed Solution
 
-[High-level description of your fix approach]
+Add a pattern anchored on stablehlo::SliceOp that checks if its operand 
+is a single-use GatherOp, then rewrites to a gather on the sliced indices.
 
 ### Implementation Plan
 
 Using UMPIRE framework (adapted):
 
-**Understand:** [Restate the problem]
+**Understand:** The compiler gathers all elements then slices, when it could 
+slice indices first and gather fewer elements.
 
-**Match:** [What similar patterns/solutions exist in the codebase?]
+**Match:** ConcatSlicesToReverse from contribution 1 follows the same structure 
+— anchor on the output op, check the input op, rewrite.
 
-**Plan:** [Step-by-step implementation plan]
-1. [Modify file X to do Y]
-2. [Add function Z]
-3. [Update tests]
+**Plan:** 
+1. Add SliceOfGather pattern in EnzymeHLOOpt.cpp anchored on SliceOp
+2. Check that the SliceOp's operand is a single-use GatherOp
+3. Slice the gather's index tensor instead
+4. Emit a new GatherOp on the sliced indices
+5. Register in patterns.add, TransformOps.td, and EnzymeXLA.cpp
+6. Add lit tests
 
-**Implement:** [Link to your branch/commits as you work]
 
-**Review:** [Self-review checklist - does it follow the project's contribution guidelines?]
+**Review:** Follow same clang-format and commit conventions as PR #2589.
 
-**Evaluate:** [How will you verify it works?]
+**Evaluate:** Lit test confirms gather on sliced indices is emitted, 
+full gather+slice sequence is not.
 
 ---
 
