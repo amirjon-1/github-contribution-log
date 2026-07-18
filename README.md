@@ -225,7 +225,7 @@ Rebase on upstream main before starting to avoid merge conflicts at PR time.
 **Contribution Number:** 2 
 **Student:** Amirjon Ulmasov 
 **Issue:** [GitHub issue link](https://github.com/EnzymeAD/Enzyme-JAX/issues/1924) 
-**Status:** Phase 2 Completed
+**Status:** Phase 3 Completed
 
 ---
 
@@ -334,38 +334,41 @@ full gather+slice sequence is not.
 
 ## Testing Strategy
 
-### Unit Tests
-
-- [ ] Test case 1: [Description]
-- [ ] Test case 2: [Description]
-- [ ] Test case 3: [Description]
-
-### Integration Tests
-
-- [ ] Integration scenario 1
-- [ ] Integration scenario 2
+- [x] Test case 1: Single-use gather — slice(gather(x, ind)) folds into gather(x, slice(ind))
+- [x] Test case 2: Negative case — gather with multiple users does NOT fold
 
 ### Manual Testing
 
-[What you tested manually and results]
+Ran bazel test //test/lit_tests:slicegather.mlir.test after implementing 
+the fix. All tests passed — pattern correctly folds single-use 
+slice(gather) and correctly skips multi-user gathers.
 
 ---
 
 ## Implementation Notes
 
-### Week [X] Progress
+### Week 1 Progress
 
-[What you built this week, challenges faced, decisions made]
-
-### Week [Y] Progress
-
-[Continue documenting as you work]
+Implemented the SliceOfGather canonicalization pattern in 
+src/enzyme_ad/jax/Passes/EnzymeHLOOpt.cpp. The pattern anchors on 
+stablehlo::SliceOp and checks that its operand is a single-use GatherOp 
+(per maintainer guidance from wsmoses). Maps the slice on the gather's 
+batch output dims onto the corresponding start_indices dims, emits a new 
+SliceOp on the index tensor, then emits a new GatherOp on the sliced 
+indices preserving all gather attributes. Registered in patterns.add, 
+TransformOps.td, and EnzymeXLA.cpp following the same steps as #2589. 
+Both lit tests pass.
 
 ### Code Changes
 
-- **Files modified:** [List]
-- **Key commits:** [Links to important commits]
-- **Approach decisions:** [Why you chose certain approaches]
+- **Files modified:** src/enzyme_ad/jax/Passes/EnzymeHLOOpt.cpp,
+  src/enzyme_ad/jax/TransformOps/TransformOps.td,
+  src/enzyme_ad/jax/Integrations/c/EnzymeXLA.cpp,
+  test/lit_tests/slicegather.mlir
+- **Key commits:** https://github.com/amirjon-1/Enzyme-JAX/tree/fix-issue-1924
+- **Approach decisions:** Anchored on SliceOp rather than GatherOp since 
+  the slice is the output op. Single-user guard added per maintainer request 
+  to avoid redundant computation.
 
 ---
 
