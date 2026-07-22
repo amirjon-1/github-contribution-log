@@ -192,7 +192,7 @@ tests. Fixes #1409.
 - [Date]: [Summary of feedback received]
 - [Date]: [How you addressed it]
 
-**Status:** Awaiting review
+**Status:** Merged
 
 ---
 
@@ -374,36 +374,41 @@ Both lit tests pass.
 
 ## Pull Request
 
-**PR Link:** [GitHub PR URL when submitted]
+**PR Link:** https://github.com/EnzymeAD/Enzyme-JAX/pull/2650
 
-**PR Description:** [Draft or final PR description - much of the content above can be adapted]
+**PR Description:** Added SliceOfGather canonicalization pattern that detects 
+when a slice of a single-use gather result can be rewritten as a gather on 
+sliced indices, avoiding redundant computation on the full index tensor. 
+Includes single-user guard per maintainer guidance. Fixes #1924.
 
 **Maintainer Feedback:**
-- [Date]: [Summary of feedback received]
-- [Date]: [How you addressed it]
+None yet
 
-**Status:** [Awaiting review / Iterating / Approved / Merged]
+**Status:** Awaiting review
 
 ---
 
 ## Learnings & Reflections
 
 ### Technical Skills Gained
-
-[What you learned technically]
+Built on contribution 1 by tackling a more complex pattern — gather ops 
+have significantly more attributes to reason about (dimension_numbers, 
+slice_sizes, index_vector_dim) compared to simple slice/concat. Learned 
+how to map output-space slices back onto the index tensor space and 
+preserve gather semantics correctly.
 
 ### Challenges Overcome
-
-[What was hard and how you solved it]
+The gather op's dimension_numbers attributes made the rewrite more involved 
+than contribution 1. Had to carefully map the slice on batch output dims 
+back to the corresponding start_indices dims without breaking the gather 
+semantics.
 
 ### What I'd Do Differently Next Time
-
-[Reflection on your process]
+None
 
 ---
 
 ## Resources Used
 
-- [Link to helpful documentation]
-- [Tutorial or Stack Overflow post that helped]
-- [GitHub issues or discussions that helped]
+- [Issue](https://github.com/EnzymeAD/Enzyme-JAX/issues/1924)
+- [PR #2589](https://github.com/EnzymeAD/Enzyme-JAX/pull/2589) - my old pr used as a guide.
