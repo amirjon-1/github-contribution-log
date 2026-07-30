@@ -225,7 +225,7 @@ Rebase on upstream main before starting to avoid merge conflicts at PR time.
 **Contribution Number:** 2 
 **Student:** Amirjon Ulmasov 
 **Issue:** [GitHub issue link](https://github.com/EnzymeAD/Enzyme-JAX/issues/1924) 
-**Status:** Phase 4 Completed
+**Status:** Phase 4 In Progress
 
 ---
 
@@ -382,9 +382,17 @@ sliced indices, avoiding redundant computation on the full index tensor.
 Includes single-user guard per maintainer guidance. Fixes #1924.
 
 **Maintainer Feedback:**
-None yet
+- July 2025: vimarsh6739 requested three changes: convert while loop to if 
+  for indexVectorDim advancement, add static shape checks for indices and 
+  gather types, and noted batching dim slicing as a potential follow-up. 
+  Applied all three changes — converted while to if, added 
+  hasStaticShape() guards, and added a TODO comment for the batching dim 
+  follow-up.
+- July 2025: Updated affine_for_mem.mlir golden output after SliceOfGather 
+  pattern began firing on that test's IR, producing correct but smaller 
+  tensors (8x16 → 4x16).
 
-**Status:** Awaiting review
+**Status:** Iterating
 
 ---
 
